@@ -1,0 +1,786 @@
+#!/usr/bin/env python
+
+LICENSE="""
+Copyright (c) 2013, Toby Collett
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+VERSION="0.1.0"
+
+import uinput
+import curses
+import sys
+import os
+from curses.wrapper import wrapper
+
+"""
+uinput.KEY_0
+uinput.KEY_1
+uinput.KEY_102ND
+uinput.KEY_10CHANNELSDOWN
+uinput.KEY_10CHANNELSUP
+uinput.KEY_2
+uinput.KEY_3
+uinput.KEY_4
+uinput.KEY_5
+uinput.KEY_6
+uinput.KEY_7
+uinput.KEY_8
+uinput.KEY_9
+uinput.KEY_A
+uinput.KEY_AB
+uinput.KEY_ADDRESSBOOK
+uinput.KEY_AGAIN
+uinput.KEY_ALTERASE
+uinput.KEY_ANGLE
+uinput.KEY_APOSTROPHE
+uinput.KEY_ARCHIVE
+uinput.KEY_AUDIO
+uinput.KEY_AUX
+uinput.KEY_B
+uinput.KEY_BACK
+uinput.KEY_BACKSLASH
+uinput.KEY_BACKSPACE
+uinput.KEY_BASSBOOST
+uinput.KEY_BATTERY
+uinput.KEY_BLUE
+uinput.KEY_BLUETOOTH
+uinput.KEY_BOOKMARKS
+uinput.KEY_BREAK
+uinput.KEY_BRIGHTNESSDOWN
+uinput.KEY_BRIGHTNESSUP
+uinput.KEY_BRIGHTNESS_CYCLE
+uinput.KEY_BRIGHTNESS_ZERO
+uinput.KEY_BRL_DOT1
+uinput.KEY_BRL_DOT10
+uinput.KEY_BRL_DOT2
+uinput.KEY_BRL_DOT3
+uinput.KEY_BRL_DOT4
+uinput.KEY_BRL_DOT5
+uinput.KEY_BRL_DOT6
+uinput.KEY_BRL_DOT7
+uinput.KEY_BRL_DOT8
+uinput.KEY_BRL_DOT9
+uinput.KEY_C
+uinput.KEY_CALC
+uinput.KEY_CALENDAR
+uinput.KEY_CAMERA
+uinput.KEY_CAMERA_DOWN
+uinput.KEY_CAMERA_FOCUS
+uinput.KEY_CAMERA_LEFT
+uinput.KEY_CAMERA_RIGHT
+uinput.KEY_CAMERA_UP
+uinput.KEY_CAMERA_ZOOMIN
+uinput.KEY_CAMERA_ZOOMOUT
+uinput.KEY_CANCEL
+uinput.KEY_CAPSLOCK
+uinput.KEY_CD
+uinput.KEY_CHANNEL
+uinput.KEY_CHANNELDOWN
+uinput.KEY_CHANNELUP
+uinput.KEY_CHAT
+uinput.KEY_CLEAR
+uinput.KEY_CLOSE
+uinput.KEY_CLOSECD
+uinput.KEY_COFFEE
+uinput.KEY_COMMA
+uinput.KEY_COMPOSE
+uinput.KEY_COMPUTER
+uinput.KEY_CONFIG
+uinput.KEY_CONNECT
+uinput.KEY_CONTEXT_MENU
+uinput.KEY_COPY
+uinput.KEY_CUT
+uinput.KEY_CYCLEWINDOWS
+uinput.KEY_D
+uinput.KEY_DASHBOARD
+uinput.KEY_DATABASE
+uinput.KEY_DELETE
+uinput.KEY_DELETEFILE
+uinput.KEY_DEL_EOL
+uinput.KEY_DEL_EOS
+uinput.KEY_DEL_LINE
+uinput.KEY_DIGITS
+uinput.KEY_DIRECTION
+uinput.KEY_DIRECTORY
+uinput.KEY_DISPLAYTOGGLE
+uinput.KEY_DISPLAY_OFF
+uinput.KEY_DOCUMENTS
+uinput.KEY_DOLLAR
+uinput.KEY_DOT
+uinput.KEY_DOWN
+uinput.KEY_DVD
+uinput.KEY_E
+uinput.KEY_EDIT
+uinput.KEY_EDITOR
+uinput.KEY_EJECTCD
+uinput.KEY_EJECTCLOSECD
+uinput.KEY_EMAIL
+uinput.KEY_END
+uinput.KEY_ENTER
+uinput.KEY_EPG
+uinput.KEY_EQUAL
+uinput.KEY_ESC
+uinput.KEY_EURO
+uinput.KEY_EXIT
+uinput.KEY_F
+uinput.KEY_F1
+uinput.KEY_F10
+uinput.KEY_F11
+uinput.KEY_F12
+uinput.KEY_F13
+uinput.KEY_F14
+uinput.KEY_F15
+uinput.KEY_F16
+uinput.KEY_F17
+uinput.KEY_F18
+uinput.KEY_F19
+uinput.KEY_F2
+uinput.KEY_F20
+uinput.KEY_F21
+uinput.KEY_F22
+uinput.KEY_F23
+uinput.KEY_F24
+uinput.KEY_F3
+uinput.KEY_F4
+uinput.KEY_F5
+uinput.KEY_F6
+uinput.KEY_F7
+uinput.KEY_F8
+uinput.KEY_F9
+uinput.KEY_FASTFORWARD
+uinput.KEY_FAVORITES
+uinput.KEY_FILE
+uinput.KEY_FINANCE
+uinput.KEY_FIND
+uinput.KEY_FIRST
+uinput.KEY_FN
+uinput.KEY_FN_1
+uinput.KEY_FN_2
+uinput.KEY_FN_B
+uinput.KEY_FN_D
+uinput.KEY_FN_E
+uinput.KEY_FN_ESC
+uinput.KEY_FN_F
+uinput.KEY_FN_F1
+uinput.KEY_FN_F10
+uinput.KEY_FN_F11
+uinput.KEY_FN_F12
+uinput.KEY_FN_F2
+uinput.KEY_FN_F3
+uinput.KEY_FN_F4
+uinput.KEY_FN_F5
+uinput.KEY_FN_F6
+uinput.KEY_FN_F7
+uinput.KEY_FN_F8
+uinput.KEY_FN_F9
+uinput.KEY_FN_S
+uinput.KEY_FORWARD
+uinput.KEY_FORWARDMAIL
+uinput.KEY_FRAMEBACK
+uinput.KEY_FRAMEFORWARD
+uinput.KEY_FRONT
+uinput.KEY_G
+uinput.KEY_GAMES
+uinput.KEY_GOTO
+uinput.KEY_GRAPHICSEDITOR
+uinput.KEY_GRAVE
+uinput.KEY_GREEN
+uinput.KEY_H
+uinput.KEY_HANGEUL
+uinput.KEY_HANJA
+uinput.KEY_HELP
+uinput.KEY_HENKAN
+uinput.KEY_HIRAGANA
+uinput.KEY_HOME
+uinput.KEY_HOMEPAGE
+uinput.KEY_HP
+uinput.KEY_I
+uinput.KEY_IMAGES
+uinput.KEY_INFO
+uinput.KEY_INSERT
+uinput.KEY_INS_LINE
+uinput.KEY_ISO
+uinput.KEY_J
+uinput.KEY_K
+uinput.KEY_KATAKANA
+uinput.KEY_KATAKANAHIRAGANA
+uinput.KEY_KBDILLUMDOWN
+uinput.KEY_KBDILLUMTOGGLE
+uinput.KEY_KBDILLUMUP
+uinput.KEY_KEYBOARD
+uinput.KEY_KP0
+uinput.KEY_KP1
+uinput.KEY_KP2
+uinput.KEY_KP3
+uinput.KEY_KP4
+uinput.KEY_KP5
+uinput.KEY_KP6
+uinput.KEY_KP7
+uinput.KEY_KP8
+uinput.KEY_KP9
+uinput.KEY_KPASTERISK
+uinput.KEY_KPCOMMA
+uinput.KEY_KPDOT
+uinput.KEY_KPENTER
+uinput.KEY_KPEQUAL
+uinput.KEY_KPJPCOMMA
+uinput.KEY_KPLEFTPAREN
+uinput.KEY_KPMINUS
+uinput.KEY_KPPLUS
+uinput.KEY_KPPLUSMINUS
+uinput.KEY_KPRIGHTPAREN
+uinput.KEY_KPSLASH
+uinput.KEY_L
+uinput.KEY_LANGUAGE
+uinput.KEY_LAST
+uinput.KEY_LEFT
+uinput.KEY_LEFTALT
+uinput.KEY_LEFTBRACE
+uinput.KEY_LEFTCTRL
+uinput.KEY_LEFTMETA
+uinput.KEY_LEFTSHIFT
+uinput.KEY_LINEFEED
+uinput.KEY_LIST
+uinput.KEY_LOGOFF
+uinput.KEY_M
+uinput.KEY_MACRO
+uinput.KEY_MAIL
+uinput.KEY_MAX
+uinput.KEY_MEDIA
+uinput.KEY_MEDIA_REPEAT
+uinput.KEY_MEMO
+uinput.KEY_MENU
+uinput.KEY_MESSENGER
+uinput.KEY_MHP
+uinput.KEY_MICMUTE
+uinput.KEY_MINUS
+uinput.KEY_MODE
+uinput.KEY_MOVE
+uinput.KEY_MP3
+uinput.KEY_MSDOS
+uinput.KEY_MUHENKAN
+uinput.KEY_MUTE
+uinput.KEY_N
+uinput.KEY_NEW
+uinput.KEY_NEWS
+uinput.KEY_NEXT
+uinput.KEY_NEXTSONG
+uinput.KEY_NUMERIC_0
+uinput.KEY_NUMERIC_1
+uinput.KEY_NUMERIC_2
+uinput.KEY_NUMERIC_3
+uinput.KEY_NUMERIC_4
+uinput.KEY_NUMERIC_5
+uinput.KEY_NUMERIC_6
+uinput.KEY_NUMERIC_7
+uinput.KEY_NUMERIC_8
+uinput.KEY_NUMERIC_9
+uinput.KEY_NUMERIC_POUND
+uinput.KEY_NUMERIC_STAR
+uinput.KEY_NUMLOCK
+uinput.KEY_O
+uinput.KEY_OK
+uinput.KEY_OPEN
+uinput.KEY_OPTION
+uinput.KEY_P
+uinput.KEY_PAGEDOWN
+uinput.KEY_PAGEUP
+uinput.KEY_PASTE
+uinput.KEY_PAUSE
+uinput.KEY_PAUSECD
+uinput.KEY_PC
+uinput.KEY_PHONE
+uinput.KEY_PLAY
+uinput.KEY_PLAYCD
+uinput.KEY_PLAYER
+uinput.KEY_PLAYPAUSE
+uinput.KEY_POWER
+uinput.KEY_POWER2
+uinput.KEY_PRESENTATION
+uinput.KEY_PREVIOUS
+uinput.KEY_PREVIOUSSONG
+uinput.KEY_PRINT
+uinput.KEY_PROG1
+uinput.KEY_PROG2
+uinput.KEY_PROG3
+uinput.KEY_PROG4
+uinput.KEY_PROGRAM
+uinput.KEY_PROPS
+uinput.KEY_PVR
+uinput.KEY_Q
+uinput.KEY_QUESTION
+uinput.KEY_R
+uinput.KEY_RADIO
+uinput.KEY_RECORD
+uinput.KEY_RED
+uinput.KEY_REDO
+uinput.KEY_REFRESH
+uinput.KEY_REPLY
+uinput.KEY_RESERVED
+uinput.KEY_RESTART
+uinput.KEY_REWIND
+uinput.KEY_RFKILL
+uinput.KEY_RIGHT
+uinput.KEY_RIGHTALT
+uinput.KEY_RIGHTBRACE
+uinput.KEY_RIGHTCTRL
+uinput.KEY_RIGHTMETA
+uinput.KEY_RIGHTSHIFT
+uinput.KEY_RO
+uinput.KEY_S
+uinput.KEY_SAT
+uinput.KEY_SAT2
+uinput.KEY_SAVE
+uinput.KEY_SCALE
+uinput.KEY_SCREEN
+uinput.KEY_SCROLLDOWN
+uinput.KEY_SCROLLLOCK
+uinput.KEY_SCROLLUP
+uinput.KEY_SEARCH
+uinput.KEY_SELECT
+uinput.KEY_SEMICOLON
+uinput.KEY_SEND
+uinput.KEY_SENDFILE
+uinput.KEY_SETUP
+uinput.KEY_SHOP
+uinput.KEY_SHUFFLE
+uinput.KEY_SLASH
+uinput.KEY_SLEEP
+uinput.KEY_SLOW
+uinput.KEY_SOUND
+uinput.KEY_SPACE
+uinput.KEY_SPELLCHECK
+uinput.KEY_SPORT
+uinput.KEY_SPREADSHEET
+uinput.KEY_STOP
+uinput.KEY_STOPCD
+uinput.KEY_SUBTITLE
+uinput.KEY_SUSPEND
+uinput.KEY_SWITCHVIDEOMODE
+uinput.KEY_SYSRQ
+uinput.KEY_T
+uinput.KEY_TAB
+uinput.KEY_TAPE
+uinput.KEY_TEEN
+uinput.KEY_TEXT
+uinput.KEY_TIME
+uinput.KEY_TITLE
+uinput.KEY_TOUCHPAD_OFF
+uinput.KEY_TOUCHPAD_ON
+uinput.KEY_TOUCHPAD_TOGGLE
+uinput.KEY_TUNER
+uinput.KEY_TV
+uinput.KEY_TV2
+uinput.KEY_TWEN
+uinput.KEY_U
+uinput.KEY_UNDO
+uinput.KEY_UNKNOWN
+uinput.KEY_UP
+uinput.KEY_UWB
+uinput.KEY_V
+uinput.KEY_VCR
+uinput.KEY_VCR2
+uinput.KEY_VENDOR
+uinput.KEY_VIDEO
+uinput.KEY_VIDEOPHONE
+uinput.KEY_VIDEO_NEXT
+uinput.KEY_VIDEO_PREV
+uinput.KEY_VOICEMAIL
+uinput.KEY_VOLUMEDOWN
+uinput.KEY_VOLUMEUP
+uinput.KEY_W
+uinput.KEY_WAKEUP
+uinput.KEY_WIMAX
+uinput.KEY_WLAN
+uinput.KEY_WORDPROCESSOR
+uinput.KEY_WPS_BUTTON
+uinput.KEY_WWW
+uinput.KEY_X
+uinput.KEY_XFER
+uinput.KEY_Y
+uinput.KEY_YELLOW
+uinput.KEY_YEN
+uinput.KEY_Z
+uinput.KEY_ZENKAKUHANKAKU
+uinput.KEY_ZOOM
+uinput.KEY_ZOOMIN
+uinput.KEY_ZOOMOUT
+uinput.KEY_ZOOMRESET
+"""
+
+
+# curses code: (uinput code, shift state)
+key_map = {
+    curses.KEY_A1: (uinput.KEY_HOME,0),
+    curses.KEY_A3: (uinput.KEY_PAGEUP,0),
+#	curses.KEY_B2: ,
+    curses.KEY_BACKSPACE: (uinput.KEY_BACKSPACE,0),
+#	curses.KEY_BEG: ,
+#	curses.KEY_BREAK: ,
+#	curses.KEY_BTAB: ,
+    curses.KEY_C1: (uinput.KEY_END,0),
+    curses.KEY_C3: (uinput.KEY_PAGEDOWN,0),
+#	curses.KEY_CANCEL: ,
+#	curses.KEY_CATAB: ,
+#	curses.KEY_CLEAR: ,
+#	curses.KEY_CLOSE: ,
+#	curses.KEY_COMMAND: ,
+#	curses.KEY_COPY: ,
+#	curses.KEY_CREATE: ,
+#	curses.KEY_CTAB: ,
+	curses.KEY_DC: (uinput.KEY_DELETE,0),
+	curses.KEY_DL: (uinput.KEY_DEL_LINE,0),
+    curses.KEY_DOWN: (uinput.KEY_DOWN,0),
+#	curses.KEY_EIC: ,
+    curses.KEY_END: (uinput.KEY_END,0),
+    curses.KEY_ENTER: (uinput.KEY_ENTER,0),
+#	curses.KEY_EOL: ,
+#	curses.KEY_EOS: ,
+#	curses.KEY_EXIT: ,
+#	curses.KEY_F0: ,
+    curses.KEY_F1: (uinput.KEY_FN_F1,0),
+    curses.KEY_F10: (uinput.KEY_FN_F10,0),
+    curses.KEY_F11: (uinput.KEY_FN_F11,0),
+    curses.KEY_F12: (uinput.KEY_FN_F12,0),
+#	curses.KEY_F13: ,
+#	curses.KEY_F14: ,
+#	curses.KEY_F15: ,
+#	curses.KEY_F16: ,
+#	curses.KEY_F17: ,
+#	curses.KEY_F18: ,
+#	curses.KEY_F19: ,
+    curses.KEY_F2: (uinput.KEY_FN_F2,0),
+#	curses.KEY_F20: ,
+#	curses.KEY_F21: ,
+#	curses.KEY_F22: ,
+#	curses.KEY_F23: ,
+#	curses.KEY_F24: ,
+#	curses.KEY_F25: ,
+#	curses.KEY_F26: ,
+#	curses.KEY_F27: ,
+#	curses.KEY_F28: ,
+#	curses.KEY_F29: ,
+    curses.KEY_F3: (uinput.KEY_FN_F3,0),
+#	curses.KEY_F30: ,
+#	curses.KEY_F31: ,
+#	curses.KEY_F32: ,
+#	curses.KEY_F33: ,
+#	curses.KEY_F34: ,
+#	curses.KEY_F35: ,
+#	curses.KEY_F36: ,
+#	curses.KEY_F37: ,
+#	curses.KEY_F38: ,
+#	curses.KEY_F39: ,
+    curses.KEY_F4: (uinput.KEY_FN_F4,0),
+#	curses.KEY_F40: ,
+#	curses.KEY_F41: ,
+#	curses.KEY_F42: ,
+#	curses.KEY_F43: ,
+#	curses.KEY_F44: ,
+#	curses.KEY_F45: ,
+#	curses.KEY_F46: ,
+#	curses.KEY_F47: ,
+#	curses.KEY_F48: ,
+#	curses.KEY_F49: ,
+    curses.KEY_F5: (uinput.KEY_FN_F5,0),
+#	curses.KEY_F50: ,
+#	curses.KEY_F51: ,
+#	curses.KEY_F52: ,
+#	curses.KEY_F53: ,
+#	curses.KEY_F54: ,
+#	curses.KEY_F55: ,
+#	curses.KEY_F56: ,
+#	curses.KEY_F57: ,
+#	curses.KEY_F58: ,
+#	curses.KEY_F59: ,
+    curses.KEY_F6: (uinput.KEY_FN_F6,0),
+#	curses.KEY_F60: ,
+#	curses.KEY_F61: ,
+#	curses.KEY_F62: ,
+#	curses.KEY_F63: ,
+    curses.KEY_F7: (uinput.KEY_FN_F7,0),
+    curses.KEY_F8: (uinput.KEY_FN_F8,0),
+    curses.KEY_F9: (uinput.KEY_FN_F9,0),
+#	curses.KEY_FIND: ,
+#	curses.KEY_HELP: ,
+    curses.KEY_HOME: (uinput.KEY_HOME,0),
+	curses.KEY_IC: (uinput.KEY_INSERT,0),
+	curses.KEY_IL: (uinput.KEY_INS_LINE,0),
+    curses.KEY_LEFT: (uinput.KEY_LEFT,0),
+#	curses.KEY_LL: ,
+#	curses.KEY_MARK: ,
+#	curses.KEY_MAX: ,
+#	curses.KEY_MESSAGE: ,
+#	curses.KEY_MIN: ,
+#	curses.KEY_MOUSE: ,
+#	curses.KEY_MOVE: ,
+#	curses.KEY_NEXT: ,
+    curses.KEY_NPAGE: (uinput.KEY_PAGEDOWN,0),
+#	curses.KEY_OPEN: ,
+#	curses.KEY_OPTIONS: ,
+    curses.KEY_PPAGE: (uinput.KEY_PAGEUP,0),
+#	curses.KEY_PREVIOUS: ,
+#	curses.KEY_PRINT: ,
+#	curses.KEY_REDO: ,
+#	curses.KEY_REFERENCE: ,
+#	curses.KEY_REFRESH: ,
+#	curses.KEY_REPLACE: ,
+#	curses.KEY_RESET: ,
+#	curses.KEY_RESIZE: ,
+#	curses.KEY_RESTART: ,
+#	curses.KEY_RESUME: ,
+    curses.KEY_RIGHT: (uinput.KEY_RIGHT,0),
+#	curses.KEY_SAVE: ,
+#	curses.KEY_SBEG: ,
+#	curses.KEY_SCANCEL: ,
+#	curses.KEY_SCOMMAND: ,
+#	curses.KEY_SCOPY: ,
+#	curses.KEY_SCREATE: ,
+#	curses.KEY_SDC: ,
+#	curses.KEY_SDL: ,
+#	curses.KEY_SELECT: ,
+#	curses.KEY_SEND: ,
+#	curses.KEY_SEOL: ,
+#	curses.KEY_SEXIT: ,
+#	curses.KEY_SF: ,
+#	curses.KEY_SFIND: ,
+#	curses.KEY_SHELP: ,
+#	curses.KEY_SHOME: ,
+#	curses.KEY_SIC: ,
+#	curses.KEY_SLEFT: ,
+#	curses.KEY_SMESSAGE: ,
+#	curses.KEY_SMOVE: ,
+#	curses.KEY_SNEXT: ,
+#	curses.KEY_SOPTIONS: ,
+#	curses.KEY_SPREVIOUS: ,
+#	curses.KEY_SPRINT: ,
+#	curses.KEY_SR: ,
+#	curses.KEY_SREDO: ,
+#	curses.KEY_SREPLACE: ,
+#	curses.KEY_SRESET: ,
+#	curses.KEY_SRIGHT: ,
+#	curses.KEY_SRSUME: ,
+#	curses.KEY_SSAVE: ,
+#	curses.KEY_SSUSPEND: ,
+#	curses.KEY_STAB: ,
+#	curses.KEY_SUNDO: ,
+#	curses.KEY_SUSPEND: ,
+#	curses.KEY_UNDO: ,
+    curses.KEY_UP: (uinput.KEY_UP,0),
+    
+    ord(' '): (uinput.KEY_SPACE,0),
+    ord('!'): (uinput.KEY_1,1),
+    ord('"'): (uinput.KEY_APOSTROPHE,1),
+    ord('#'): (uinput.KEY_3,1),
+    ord('$'): (uinput.KEY_4,1),
+    ord('%'): (uinput.KEY_5,1),
+    ord('&'): (uinput.KEY_7,1),
+    ord("'"): (uinput.KEY_APOSTROPHE,0),
+    ord('('): (uinput.KEY_9,1),
+    ord(')'): (uinput.KEY_0,1),
+    ord('*'): (uinput.KEY_8,1),
+    ord('+'): (uinput.KEY_EQUAL,1),
+    ord(','): (uinput.KEY_COMMA,0),
+    ord('-'): (uinput.KEY_MINUS,0),
+    ord('.'): (uinput.KEY_DOT,0),
+    ord('0'): (uinput.KEY_0,0),
+    ord('1'): (uinput.KEY_1,0),
+    ord('2'): (uinput.KEY_2,0),
+    ord('3'): (uinput.KEY_3,0),
+    ord('4'): (uinput.KEY_4,0),
+    ord('5'): (uinput.KEY_5,0),
+    ord('6'): (uinput.KEY_6,0),
+    ord('7'): (uinput.KEY_7,0),
+    ord('8'): (uinput.KEY_8,0),
+    ord('9'): (uinput.KEY_9,0),
+    ord(':'): (uinput.KEY_SEMICOLON,1),
+    ord(';'): (uinput.KEY_SEMICOLON,0),
+    ord('<'): (uinput.KEY_COMMA,1),
+    ord('='): (uinput.KEY_EQUAL,0),
+    ord('>'): (uinput.KEY_DOT,1),
+    ord('?'): (uinput.KEY_SLASH,1),
+    ord('@'): (uinput.KEY_2,1),
+    ord('A'): (uinput.KEY_A,1),
+    ord('B'): (uinput.KEY_B,1),
+    ord('C'): (uinput.KEY_C,1),
+    ord('D'): (uinput.KEY_D,1),
+    ord('E'): (uinput.KEY_E,1),
+    ord('F'): (uinput.KEY_F,1),
+    ord('G'): (uinput.KEY_G,1),
+    ord('H'): (uinput.KEY_H,1),
+    ord('I'): (uinput.KEY_I,1),
+    ord('J'): (uinput.KEY_J,1),
+    ord('K'): (uinput.KEY_K,1),
+    ord('L'): (uinput.KEY_L,1),
+    ord('M'): (uinput.KEY_M,1),
+    ord('N'): (uinput.KEY_N,1),
+    ord('O'): (uinput.KEY_O,1),
+    ord('P'): (uinput.KEY_P,1),
+    ord('Q'): (uinput.KEY_Q,1),
+    ord('R'): (uinput.KEY_R,1),
+    ord('S'): (uinput.KEY_S,1),
+    ord('T'): (uinput.KEY_T,1),
+    ord('U'): (uinput.KEY_U,1),
+    ord('V'): (uinput.KEY_V,1),
+    ord('W'): (uinput.KEY_W,1),
+    ord('X'): (uinput.KEY_X,1),
+    ord('Y'): (uinput.KEY_Y,1),
+    ord('Z'): (uinput.KEY_Z,1),
+
+    ord('['): (uinput.KEY_LEFTBRACE,0),
+    ord('\\'): (uinput.KEY_BACKSLASH,0),
+    ord(']'): (uinput.KEY_RIGHTBRACE,0),
+    ord('^'): (uinput.KEY_6,1),
+    ord('_'): (uinput.KEY_MINUS,1),
+    ord('`'): (uinput.KEY_GRAVE,0),
+
+    ord('a'): (uinput.KEY_A,0),
+    ord('b'): (uinput.KEY_B,0),
+    ord('c'): (uinput.KEY_C,0),
+    ord('d'): (uinput.KEY_D,0),
+    ord('e'): (uinput.KEY_E,0),
+    ord('f'): (uinput.KEY_F,0),
+    ord('g'): (uinput.KEY_G,0),
+    ord('h'): (uinput.KEY_H,0),
+    ord('i'): (uinput.KEY_I,0),
+    ord('j'): (uinput.KEY_J,0),
+    ord('k'): (uinput.KEY_K,0),
+    ord('l'): (uinput.KEY_L,0),
+    ord('m'): (uinput.KEY_M,0),
+    ord('n'): (uinput.KEY_N,0),
+    ord('o'): (uinput.KEY_O,0),
+    ord('p'): (uinput.KEY_P,0),
+    ord('q'): (uinput.KEY_Q,0),
+    ord('r'): (uinput.KEY_R,0),
+    ord('s'): (uinput.KEY_S,0),
+    ord('t'): (uinput.KEY_T,0),
+    ord('u'): (uinput.KEY_U,0),
+    ord('v'): (uinput.KEY_V,0),
+    ord('w'): (uinput.KEY_W,0),
+    ord('x'): (uinput.KEY_X,0),
+    ord('y'): (uinput.KEY_Y,0),
+    ord('z'): (uinput.KEY_Z,0),
+
+    ord('{'): (uinput.KEY_LEFTBRACE,1),
+    ord('|'): (uinput.KEY_SLASH,1),
+    ord('}'): (uinput.KEY_RIGHTBRACE,1),
+    ord('~'): (uinput.KEY_GRAVE,1),
+
+    9: (uinput.KEY_TAB,0),
+    10: (uinput.KEY_ENTER,0),
+    27: (uinput.KEY_ESC,0),
+}
+
+class device_wrapper(object):
+    def __init__(self,stdscr, debug=False):
+        self.stdscr = stdscr
+        self.i = 2
+        if debug:
+            self.device = None
+        else:
+            self.device = uinput.Device([x[0] for x in key_map.values()] + [uinput.KEY_LEFTSHIFT, uinput.KEY_LEFTCTRL])
+    
+    def emit(self,a,b):
+        self.stdscr.addstr(self.i,10,"Send %s" % str(a))
+        self.i += 1
+        if self.device:
+            self.device.emit(a,b)
+
+    def clear(self, ev, brk_count):
+        self.i = 2
+        self.stdscr.clear()
+        self.stdscr.addstr(0,0,"Event Recieved: %s" % ev)
+        if brk_count:
+            self.stdscr.addstr(1,0,"Ctrl+C passed on to uinput, press again to exit")
+
+def loop(stdscr,debug=False):
+    brk_count = 0
+    
+    device = device_wrapper(stdscr, debug=debug)
+
+    while True:
+        ev = -1
+        try:
+            ev = stdscr.getch()
+        except KeyboardInterrupt:
+            ev = -1
+
+        # this happens twice for each Ctrl+C, only pass on every other one
+        if ev == -1:
+            brk_count += 1
+            ev = 3
+            
+            if brk_count > 3:
+                sys.exit(0)
+        else:
+            brk_count = 0
+            
+        device.clear(str(ev), brk_count)
+        
+        if key_map.has_key(ev):
+            if key_map[ev][1]:
+                device.emit(uinput.KEY_LEFTSHIFT, 1)
+            device.emit(key_map[ev][0], 1) # Press.
+            device.emit(key_map[ev][0], 0) # Release.
+            if key_map[ev][1]:
+                device.emit(uinput.KEY_LEFTSHIFT, 0)
+        elif int(ev) > 0 and int(ev) < 27:
+            device.emit(uinput.KEY_LEFTCTRL, 1) # Press.
+            device.emit(key_map[int(ev)+ord('a')-1][0], 1) # Press.
+            device.emit(key_map[int(ev)+ord('a')-1][0], 0) # Release.
+            device.emit(uinput.KEY_LEFTCTRL, 0) # Press.
+        else:
+            stdscr.addstr(2,10,"NO MAP")
+
+def main(debug=False):
+    wrapper(loop, debug=debug)
+
+def print_usage():
+    print >> sys.stderr, """%s
+    
+A simple utility that utilises the uinput kernel driver to
+emulate local keyboard events bases on ncurses input events.
+
+It uses the uinput python module which you can get from pypi
+if it is not available for your distribution.
+
+The script is not able to emulate all key events, but it should
+be able to control a basic shell, and for example xbmc running
+on the raspberry pi.
+
+You should make sure the uinput module is loaded and that you
+have permissions to inject events to the uinput device. Adding
+uinput to /etc/modules can be a good idea.
+
+You may need to run this script before the application in question
+is launched. That was my experience with xbmc, which is a bit of a
+pain. One way to work with this is to have a screen session with
+the script always running which you can switch to when you want
+to control the target device.
+""" % os.path.basename(sys.argv[0]) + LICENSE
+
+if __name__ == "__main__":
+    debug = False
+    for a in sys.argv[1:]:
+        if a == "-h" or a == "--help":
+            print_usage()
+            sys.exit(0)
+        elif a == "-v" or a == "--version":
+            print >> sys.stderr, VERSION
+            sys.exit(0)
+        # hidden developer mode where no events are actually sent
+        elif a == "-d":
+            debug = True
+        else:
+            print_usage()
+            sys.exit(1)
+    
+    main(debug=debug)
